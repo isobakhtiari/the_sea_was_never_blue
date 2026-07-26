@@ -2,7 +2,7 @@
 
 Interactive data visualisation exploring the ancient Greek colour terms used in Homer's <em>Iliad</em>.
 
-**Published project: `the_sea_was_never_blue/`**
+**Published project: [the_sea_was_never_blue/](https://isoparkes.github.io/the_sea_was_never_blue/)
 
 ## What I aimed to accomplish
 
