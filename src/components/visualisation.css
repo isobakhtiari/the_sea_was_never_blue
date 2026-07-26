@@ -1,4 +1,6 @@
 /* src/App.css or src/components/visualisation.css */
+@import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;700&display=swap');
+
 .viz-container {
     position: relative;
     display: flex;
@@ -6,7 +8,10 @@
     margin-top: 20px;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;700&display=swap');
+html, body {
+    margin: 0;
+    padding: 0;
+}
 
 body {
     background-color: #e6f5f9;
@@ -30,10 +35,90 @@ body {
     font-style: normal;
 }
 
+@font-face {
+    font-family: 'Heldane Text';
+    src: url('/fonts/HeldaneTextRegular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Heldane Text';
+    src: url('/fonts/HeldaneTextMedium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Heldane Text';
+    src: url('/fonts/HeldaneTextBold.otf') format('opentype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Heldane Text';
+    src: url('/fonts/HeldaneTextRegularItalic.otf') format('opentype');
+    font-weight: normal;
+    font-style: italic;
+}
+
 .chart-title {
     font-family: 'Louize Display', serif;
     font-size: 24px;
     fill: #333;
+}
+
+.hero-video-section {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: translate(-50%, -50%);
+}
+
+.hero-video-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 25, 40, 0.28);
+}
+
+.hero-title {
+    position: relative;
+    z-index: 1;
+    font-size: 56px;
+    color: #ffffff;
+    text-align: center;
+    margin: 0 0 12px 0;
+    padding: 0 24px;
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
+}
+
+.hero-subtitle {
+    position: relative;
+    z-index: 1;
+    font-family: 'Louize Display', serif;
+    font-size: 20px;
+    color: #ffffff;
+    text-align: left;
+    max-width: 680px;
+    margin: 60px auto 0 auto;
+    padding: 0 24px;
+    line-height: 1.6;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
 }
 
 .App {
@@ -70,11 +155,24 @@ body {
     line-height: 1.5;
 }
 
-.intro-section {
-    max-width: 900px;
-    margin: 3vh auto 1vh auto;
-    padding: 0 24px;
-    text-align: center;
+.pinned-tooltip {
+    position: absolute;
+    width: auto;
+    min-width: 290px;
+    max-width: 320px;
+    height: auto;
+    padding: 14px;
+    text-align: left;
+    background: white;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    z-index: 99;
+    font-family: 'Martian Mono', monospace;
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 .scrolly-container {
@@ -100,7 +198,7 @@ body {
     pointer-events: none;
 }
 
-/* Full-height wrapper: centres the card vertically within the viewport */
+/* full-height wrapper, centers the card vertically within the viewport */
 .step-full-height {
     height: 100vh;
     display: flex;
@@ -129,7 +227,7 @@ body {
     padding: 0 24px;
 }
 
-/* Diamond highlight flashes constantly and quickly */
+/* diamond highlight flashes constantly and quickly */
 @keyframes eyeshine-flash {
     0%, 100% { opacity: 0; }
     50%       { opacity: 1; }

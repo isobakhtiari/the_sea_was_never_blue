@@ -6,7 +6,7 @@ import { HOMERIC_COLOURS, GREEK_TO_TRANSLITERATION } from '../data/constants.js'
 const D3SeaFrequency = ({ reference = 'Iliad (books 1 to 24)', hoveredTerm, onSegmentHover, size = 400 }) => {
     const svgRef = useRef(null);
 
-    // Derive data from the selected reference — recomputes only when reference changes
+    // polar area chart uses the data from the selected context reference, e.g. Gods or Sea
     const data = useMemo(() => {
         const refEntry = referencePaletteData.data.find(d => d.reference === reference);
         if (!refEntry) return [];
@@ -17,7 +17,7 @@ const D3SeaFrequency = ({ reference = 'Iliad (books 1 to 24)', hoveredTerm, onSe
         }));
     }, [reference]);
 
-    // ── Effect 1: build the chart once ──────────────────────────────
+    // build polar area chart
     useEffect(() => {
         const width = size;
         const height = size;
@@ -32,7 +32,7 @@ const D3SeaFrequency = ({ reference = 'Iliad (books 1 to 24)', hoveredTerm, onSe
             .append('g')
             .attr('transform', `translate(${width / 2}, ${height / 2})`);
 
-        // Polar area: equal angles, radius encodes frequency
+        // polar area: equal angles, radius encodes frequency
         const angleSlice = (2 * Math.PI) / data.length;
         const maxFreq = d3.max(data, d => d.frequency);
         const rScale = d3.scaleSqrt().domain([0, maxFreq]).range([0, radius]);
@@ -42,17 +42,17 @@ const D3SeaFrequency = ({ reference = 'Iliad (books 1 to 24)', hoveredTerm, onSe
             .outerRadius(d => rScale(d.frequency))
             .startAngle((_, i) => i * angleSlice)
             .endAngle((_, i) => (i + 1) * angleSlice)
-            .padAngle(0); // no gaps — segments share exact edges
+            .padAngle(0); // no gaps so the segments share exact edges
 
         svg.selectAll('.arc-slice')
             .data(data)
             .join('path')
             .attr('class', 'arc-slice')
-            .attr('data-transliteration', d => d.transliteration) // key for Effect 2
+            .attr('data-transliteration', d => d.transliteration)
             .attr('d', arc)
             .attr('fill', d => HOMERIC_COLOURS[d.greekTerm] || '#ccc')
-            .attr('fill-opacity', 0.85)
-            .attr('stroke', 'none') // no stroke — eliminates doubled borders between segments
+            .attr('fill-opacity', 1)
+            .attr('stroke', 'none')
             .style('cursor', 'pointer')
             .on('mouseover', (event, d) => { onSegmentHover?.(d.transliteration); })
             .on('mouseout', () => { onSegmentHover?.(null); });
@@ -60,29 +60,29 @@ const D3SeaFrequency = ({ reference = 'Iliad (books 1 to 24)', hoveredTerm, onSe
 
     }, [data, size]);
 
-    // ── Effect 2: respond to hover changes ──────────────────────────
+    // colour term segments in the polar area chart highlight on hover
     useEffect(() => {
         const svg = d3.select(svgRef.current);
         if (!hoveredTerm) {
-            // Nothing hovered — reset all slices
+            // when no sgement is hovered over, all slices are full opacity
             svg.selectAll('.arc-slice')
                 .transition().duration(200)
-                .attr('fill-opacity', 0.85);
+                .attr('fill-opacity', 1);
             return;
         }
 
-        // Check if the hovered scatterplot term appears in the current reference's chart
+        // check if the hovered scatterplot term appears in the current reference's polar area chart
         const termIsInChart = data.some(d => d.transliteration === hoveredTerm);
 
         svg.selectAll('.arc-slice')
             .transition().duration(200)
             .attr('fill-opacity', d =>
-                !termIsInChart ? 0.85
+                !termIsInChart ? 1
                 : d.transliteration === hoveredTerm ? 1
                 : 0.08
             );
 
-    }, [hoveredTerm, data]); // ← runs whenever hover or reference data changes
+    }, [hoveredTerm, data]); // runs whenever hover or reference data changes
 
     return <svg ref={svgRef} style={{ overflow: 'visible' }}></svg>;
 };

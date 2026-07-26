@@ -1,5 +1,4 @@
-// Shared colour and transliteration constants used across components.
-// Single source of truth — import from here rather than redefining locally.
+// colour and transliteration constants
 
 export const HOMERIC_COLOURS = {
     'γλαυκός':        '#6B9AA3',
@@ -18,7 +17,7 @@ export const HOMERIC_COLOURS = {
     'μέλας':          '#1A1A1A',
 };
 
-// Maps Greek term → Transliteration value (must match d.Transliteration in the scatterplot data)
+// maps Greek term → Transliteration value (must match d.Transliteration in the scatterplot data)
 export const GREEK_TO_TRANSLITERATION = {
     'γλαυκός':        'Glaukos',
     'κυάνεος':        'Kyaneos',

@@ -9,16 +9,43 @@ const LABEL_OFFSETS = {
     'πολιός': { x: -3, y: 0 },  // otherwise χλωρός is overlapping with οἶνοψ
 };
 
-const D3ScatterPlot = ({activeStep, onTermHover, activeTerms, fadeDots}) => {
-    const svgRef = useRef(null); 
-    const tooltipRef = useRef(null); // html tooltip can float anywhere on the page, it is not constrained by the SVG container
+const MARGIN = { top: 36, right: 100, bottom: 80, left: 100 };
+const CHART_WIDTH = 720 - MARGIN.left - MARGIN.right;
+const CHART_HEIGHT = 540 - MARGIN.top - MARGIN.bottom;
+const X_SCALE = d3.scaleLinear().domain([0, 10]).range([0, CHART_WIDTH]);
+const Y_SCALE = d3.scaleLinear().domain([0, 10]).range([CHART_HEIGHT, 0]);
 
+const buildTooltipHtml = d => { // html tooltip can float anywhere on the page, it is not constrained by the SVG container
+    const isWhite = d.Greek_Term === 'ἀργός' || d.Greek_Term === 'λευκός';
+    const textColor = isWhite ? '#000000' : HOMERIC_COLOURS[d.Greek_Term];
+    return `
+        <div style="font-size: 13px; font-weight: bold; margin-bottom: 4px; color: #000;">
+            <span>${d.Transliteration}</span>
+            <span style="font-family: Georgia, serif; font-weight: normal; font-size: 15px; color: ${textColor};">
+                ${d.Greek_Term}
+            </span>
+        </div>
+        <div style="color: #666; font-style: italic;">
+            ${d.English}
+        </div>
+        <div style="margin-top: 5px; padding-top: 5px; font-size: 11px;">
+            ${d.Context}
+        </div>
+    `;
+};
+
+const D3ScatterPlot = ({activeStep, onTermHover, activeTerms, fadeDots, pinnedTerms, hoveredTerm}) => {
+    const svgRef = useRef(null);
+    const tooltipRef = useRef(null); 
+    const pinnedTooltipsRef = useRef(null); // container for tooltips that stay visible (not hover-triggered)
+
+    // scatterplot
     useEffect(() => {
         const data = fullData.colour_scales;
 
-        const margin = { top: 36, right: 100, bottom: 80, left: 100 };
-        const width = 720 - margin.left - margin.right;
-        const height = 540 - margin.top - margin.bottom;
+        const margin = MARGIN;
+        const width = CHART_WIDTH;
+        const height = CHART_HEIGHT;
 
         // clear previous render
         d3.select(svgRef.current).selectAll("*").remove();
@@ -30,9 +57,9 @@ const D3ScatterPlot = ({activeStep, onTermHover, activeTerms, fadeDots}) => {
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
         
-        // x, y scales
-        const xScale = d3.scaleLinear().domain([0, 10]).range([0, width]);
-        const yScale = d3.scaleLinear().domain([0, 10]).range([height, 0]);
+        // x, y scales (shared constants, so pinned tooltip positioning uses the same mapping)
+        const xScale = X_SCALE;
+        const yScale = Y_SCALE;
 
         // Low/Moderate/High categories on the axes
         const separators = [3.33, 6.66]; 
@@ -126,14 +153,14 @@ const D3ScatterPlot = ({activeStep, onTermHover, activeTerms, fadeDots}) => {
         // html tooltip
         const tooltipDiv = d3.select(tooltipRef.current);
 
-        if (activeStep >= 0){
-
-            // Render Dots Instantly
+        {
+            // render scatterplot dots
             svg.selectAll(".dot")
                 .data(data)
                 .join("circle")
                 .attr("class", "dot")
-                .attr("cx", d => xScale(d.Unique_gleam_score)) 
+                .attr("data-transliteration", d => d.Transliteration) // lets other charts locate this dot's live position
+                .attr("cx", d => xScale(d.Unique_gleam_score))
                 .attr("cy", d => yScale(d.Luminosity_Score))     
                 .attr("r", 8) 
                 .style("fill", d => HOMERIC_COLOURS[d.Greek_Term] || "#ccc")
@@ -142,25 +169,9 @@ const D3ScatterPlot = ({activeStep, onTermHover, activeTerms, fadeDots}) => {
                 // tooltip listeners
                 .on("mouseover", (event, d) => {
                     onTermHover?.(d.Transliteration); // hover callback
-                    const [x, y] = d3.pointer(event, svgRef.current); 
+                    const [x, y] = d3.pointer(event, svgRef.current);
 
-                    const isWhite = d.Greek_Term === 'ἀργός' || d.Greek_Term === 'λευκός';
-                    const textColor = isWhite ? '#000000' : HOMERIC_COLOURS[d.Greek_Term];
-
-                    tooltipDiv.html(`
-                        <div style="font-size: 13px; font-weight: bold; margin-bottom: 4px; color: #000;">
-                            <span>${d.Transliteration}</span>
-                            <span style="font-family: Georgia, serif; font-weight: normal; font-size: 15px; color: ${textColor};">
-                                ${d.Greek_Term}
-                            </span>
-                        </div>
-                        <div style="color: #666; font-style: italic;">
-                            ${d.English}
-                        </div>
-                        <div style="margin-top: 5px; padding-top: 5px; font-size: 11px;">
-                            ${d.Context}
-                        </div>
-                    `);
+                    tooltipDiv.html(buildTooltipHtml(d));
 
                     const nearRight = x > (width + margin.left) * 0.95;
 
@@ -183,7 +194,7 @@ const D3ScatterPlot = ({activeStep, onTermHover, activeTerms, fadeDots}) => {
                         .attr("r", 8);
                 });
 
-            // Render Greek Labels Instantly
+            // render greek labels
             svg.selectAll(".label")
                 .data(data)
                 .enter()
@@ -201,20 +212,30 @@ const D3ScatterPlot = ({activeStep, onTermHover, activeTerms, fadeDots}) => {
                 .style("font-size", "13px")
                 .style("font-family", "Georgia, serif")
                 .style("fill", "#333")
-                .style("opacity", 1); 
+                .style("opacity", 1);
         }
-    }, [activeStep]);
+    }, []); // this only builds once (dots/labels persist as the same DOM elements as user scrolls down the page)
 
-    // ── Effect 2: respond to reference dropdown selection — dim dots not in the selected reference's palette ───────
+    // scatterplot dots fade in/out depending on the scrolly-telling cards
     useEffect(() => {
         const svg = d3.select(svgRef.current);
-        const terms = activeTerms || new Set();
-        if (!fadeDots) {
-            // Reset all dots and labels to full opacity
+        const pinned = pinnedTerms || [];
+
+        if (pinned.length > 0) {
+            // pinned colour terms (dots and labels); depends on the previous scrolly-telling card
+            svg.selectAll('.dot')
+                .transition().duration(300)
+                .style('opacity', d => pinned.includes(d.Transliteration) ? 1 : 0.08);
+            svg.selectAll('.label')
+                .transition().duration(300)
+                .style('opacity', d => pinned.includes(d.Transliteration) ? 1 : 0.08);
+        } else if (!fadeDots) {
+            // reset all dots and labels to full opacity
             svg.selectAll('.dot').transition().duration(300).style('opacity', 1);
             svg.selectAll('.label').transition().duration(300).style('opacity', 1);
         } else {
-            // Fade out dots and labels that aren't part of the selected reference's palette
+            // fade out dots and labels that are not a part of the selected colour palette
+            const terms = activeTerms || new Set();
             svg.selectAll('.dot')
                 .transition().duration(300)
                 .style('opacity', d => terms.has(d.Transliteration) ? 1 : 0.08);
@@ -222,12 +243,89 @@ const D3ScatterPlot = ({activeStep, onTermHover, activeTerms, fadeDots}) => {
                 .transition().duration(300)
                 .style('opacity', d => terms.has(d.Transliteration) ? 1 : 0.08);
         }
-    }, [fadeDots, activeTerms]);
+    }, [fadeDots, activeTerms, pinnedTerms]);
+
+    // make the tooltips always visible (not hover dependent) for the pinned colour terms
+    useEffect(() => {
+        const data = fullData.colour_scales;
+        const pinnedContainer = d3.select(pinnedTooltipsRef.current);
+        const pinned = pinnedTerms || [];
+
+        const pinnedData = pinned.length > 0
+            ? data
+                .filter(d => pinned.includes(d.Transliteration))
+                .map(d => {
+                    const x = MARGIN.left + X_SCALE(d.Unique_gleam_score);
+                    const y = MARGIN.top + Y_SCALE(d.Luminosity_Score);
+                    return { ...d, _x: x, _y: y, _nearRight: x > (CHART_WIDTH + MARGIN.left) * 0.95 };
+                })
+            : [];
+
+        pinnedContainer.selectAll(".pinned-tooltip")
+            .data(pinnedData, d => d.Transliteration)
+            .join(
+                enter => enter.append("div")
+                    .attr("class", "pinned-tooltip")
+                    .style("opacity", 0)
+                    .style("min-width", d => d._nearRight ? "160px" : "300px")
+                    .style("max-width", d => d._nearRight ? "180px" : "320px")
+                    .style("left", d => (d._x + 20) + "px")
+                    .style("top", d => (d._y - 10) + "px")
+                    .html(buildTooltipHtml)
+                    .call(e => e.transition("pinned-fade").delay(150).duration(300).style("opacity", 1)),
+                update => update
+                    .interrupt("pinned-fade")
+                    .style("opacity", 1)
+                    .style("left", d => (d._x + 20) + "px")
+                    .style("top", d => (d._y - 10) + "px")
+                    .html(buildTooltipHtml),
+                exit => exit
+                    .interrupt("pinned-fade")
+                    .transition("pinned-fade").duration(400)
+                    .style("opacity", 0)
+                    .remove()
+            );
+    }, [pinnedTerms]);
+
+    // when the user hovers on the colour term segment in the polar area chart, this reflects back onto the
+    // scatterplot (shows the hover tooltip and enlarges the corresponding dot)
+    useEffect(() => {
+        const svg = d3.select(svgRef.current);
+        const tooltipDiv = d3.select(tooltipRef.current);
+
+        svg.selectAll(".dot")
+            .transition().duration(200)
+            .attr("r", d => (hoveredTerm && d.Transliteration === hoveredTerm) ? 10 : 8);
+
+        if (!hoveredTerm) {
+            tooltipDiv.style("opacity", 0);
+            return;
+        }
+
+        const match = fullData.colour_scales.find(d => d.Transliteration === hoveredTerm);
+        if (!match) {
+            tooltipDiv.style("opacity", 0);
+            return;
+        }
+
+        const x = MARGIN.left + X_SCALE(match.Unique_gleam_score);
+        const y = MARGIN.top + Y_SCALE(match.Luminosity_Score);
+        const nearRight = x > (CHART_WIDTH + MARGIN.left) * 0.95;
+
+        tooltipDiv
+            .html(buildTooltipHtml(match))
+            .style("min-width", nearRight ? "160px" : "300px")
+            .style("max-width", nearRight ? "180px" : "320px")
+            .style("left", (x + 20) + "px")
+            .style("top", (y - 10) + "px")
+            .style("opacity", 1);
+    }, [hoveredTerm]);
 
     return (
         <div className="viz-container">
             <svg ref={svgRef}></svg>
             <div ref={tooltipRef} className="html-tooltip"></div>
+            <div ref={pinnedTooltipsRef}></div>
         </div>
     );
 };
