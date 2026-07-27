@@ -63,8 +63,8 @@ function App() {
         <div style={cardStyle}>
           <p className="body-text" style={{ fontFamily: 'Heldane Text', fontSize: '16px' }}>
             William Gladstone, the four-time British Prime Minister and classics scholar, counted every colour reference
-            in the <em>Iliad</em> and <em>Odyssey</em> in his <em>Studies on Homer and the Homeric Age</em> (1858). Gladstone concluded that this
-            linguistic void was because the Greeks were in effect colourblind, arguing that "the organ of colour and its
+            in the <em>Iliad</em> and <em>Odyssey</em> in his <em>Studies on Homer and the Homeric Age</em> (1858), noting that the colour 
+            'blue' was completely absent from the epics. He concluded that this linguistic void was because the Greeks were in effect colourblind, arguing that "the organ of colour and its
             impressions were but partially developed among the Greeks of the heroic age". Gladstone suggested the Greeks saw the world
             in a monochrome of black and white, with occasional flashes of red (<span style={{ color: '#B8302C' }}><strong><em>erythros</em></strong></span>).
             Rather than a lack of physical perception, modern linguists see Homer's vocabulary as a reflection of how language shifts across cultures
