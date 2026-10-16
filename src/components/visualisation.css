@@ -121,6 +121,24 @@ body {
     text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
 }
 
+.hero-byline {
+    position: relative;
+    z-index: 1;
+    font-family: 'Martian Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #ffffff;
+    text-align: left;
+    width: 100%;
+    max-width: 728px;
+    box-sizing: border-box;
+    margin: 32px auto 0 auto;
+    padding: 0 24px;
+    opacity: 0.9;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
+}
+
 .App {
     display: block;
     text-align: center;

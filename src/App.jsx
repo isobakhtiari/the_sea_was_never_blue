@@ -177,6 +177,9 @@ function App() {
             sometimes shading into near-black depths (<em>melas</em>),
             but never just 'blue'.
           </p>
+        <p className="hero-byline">
+          By Isobel Bakhtiari
+        </p>
       </div>
       <div className="scrolly-container">
         <div className="sticky-graphic">
@@ -326,6 +329,9 @@ function App() {
             <br />
             <br />
             Research for this piece included the following works: <a href="https://doi.org/10.1093/CQ/BMI034" target="_blank" rel="noopener noreferrer">Gods' Blue Hair in Homer and in Eighteenth-Dynasty Egypt</a> by R. Drew Griffith (2005), <a href="https://doi.org/10.1002/COL.5080060410" target="_blank" rel="noopener noreferrer">Notes on Color Terminology in the Iliad and the Epic of Gilgamesh</a> by Rolf G. Kuehni (1981), <a href="https://scispace.com/papers/historie-du-paysage-sensible-des-grecs-a-l-epoque-archaique-19x8npcvly" target="_blank" rel="noopener noreferrer">Histoire du paysage sensible des Grecs à l'époque archaïque</a> by Adeline Grand-Clément, <a href="https://doi.org/10.1201/9780429299070-46" target="_blank" rel="noopener noreferrer">Did the Ancient Greeks Perceive the Color 'Blue'?</a> by M. J. Durão (2022), <a href="https://doi.org/10.1007/978-3-030-20538-6_1" target="_blank" rel="noopener noreferrer">Is the Sea Wine-Dark?</a> by R. Schiller (2019), <a href="https://aeon.co/essays/can-we-hope-to-understand-how-the-greeks-saw-their-world" target="_blank" rel="noopener noreferrer">Can We Hope to Understand How the Greeks Saw Their World?</a> by Maria Michela Sassi.
+            <br />
+            <br />
+            This project was built as part of the Lede Program at Columbia Journalism School.
         </p>
       </div>
 
